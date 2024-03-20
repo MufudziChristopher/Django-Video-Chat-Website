@@ -27,19 +27,19 @@ let createOffer = async () => {
     document.getElementById('user-2').srcObject = remoteStream
 
 
-    localStream.getTracks().array.forEach((track) => {
+    localStream.getTracks().forEach((track) => {
         peerConnection.addTrack(track, localStream)
         
     })
 
     peerConnection.ontrack = (event) => {
-        event.streams[0].getTracks().forEach(track) => {
-            remoteStream.addTrack()
-        }
+        event.streams[0].getTracks().forEach((track) => {
+            remoteStream.addTrack(track)
+        })
     }
 
 
-    peerConnection.onicecandidate = async (event) => async {
+    peerConnection.onicecandidate = async (event) =>  {
         if (event.candidate){
             console.log('New ICE Candidate: ', event.candidate)
         }
