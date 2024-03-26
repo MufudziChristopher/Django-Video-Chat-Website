@@ -8,7 +8,7 @@ let channel;
 
 let queryString = window.location.search
 let urlParams = new URLSearchParams(queryString)
-let  roomId = urlParams.get('room')
+let roomId = urlParams.get('room')
 
 if (!roomId){
     window.location = 'lobby.html'
@@ -31,7 +31,7 @@ let init = async () => {
     client = await AgoraRTM.createInstance(APP_ID)
     await client.login({uid, token})
 
-    channel = client.createChannel('main')
+    channel = client.createChannel(roomId)
     await channel.join()
 
     channel.on('MemberJoined', handleUserJoined)
@@ -39,8 +39,13 @@ let init = async () => {
 
     client.on('MessageFromPeer', handleMessageFromPeer)
 
-    localStream = await navigator.mediaDevices.getUserMedia({video:true, audio:false})
+    localStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true})
     document.getElementById('user-1').srcObject = localStream
+    document.getElementById('camera-off-btn').style.display = 'block'
+    document.getElementById('camera-btn').style.display = 'none'    
+    document.getElementById('mic-off-btn').style.display = 'block'
+    document.getElementById('mic-btn').style.display = 'none'
+
 
 }
 
@@ -139,5 +144,45 @@ let leaveChannel = async () =>{
     await client.logout()
 }
 
+let toggleCamera = async () => {
+    let videoTrack = localStream.getTracks().find(track => track.kind === 'video')
+
+    if(videoTrack.enabled){
+        videoTrack.enabled = false
+        document.getElementById('camera-off-btn').style.display = 'none'
+        document.getElementById('camera-btn').style.display = 'block'
+    }else{
+        videoTrack.enabled = true
+        document.getElementById('camera-off-btn').style.display = 'block'
+        document.getElementById('camera-btn').style.display = 'none'
+
+    }
+}   
+
+let toggleMic = async () => {
+    let audioTrack = localStream.getTracks().find(track => track.kind === 'audio')
+
+    if(audioTrack.enabled){
+        audioTrack.enabled = false
+        document.getElementById('mic-off-btn').style.display = 'none'
+        document.getElementById('mic-btn').style.display = 'block'
+    }else{
+        audioTrack.enabled = true
+        document.getElementById('mic-off-btn').style.display = 'block'
+        document.getElementById('mic-btn').style.display = 'none'
+
+    }
+}   
+
+
 window.addEventListener('beforeunload', leaveChannel)
+
+document.getElementById('camera-btn').addEventListener('click', toggleCamera)
+document.getElementById('camera-off-btn').addEventListener('click', toggleCamera)
+
+
+document.getElementById('mic-btn').addEventListener('click', toggleMic)
+document.getElementById('mic-off-btn').addEventListener('click', toggleMic)
+
+
 init()
