@@ -27,6 +27,7 @@ let init = async () => {
     await channel.join()
 
     channel.on('MemberJoined', handleUserJoined)
+    channel.on('MemberLeft', handleUserLeft)
 
     client.on('MessageFromPeer', handleMessageFromPeer)
 
@@ -34,6 +35,7 @@ let init = async () => {
     document.getElementById('user-1').srcObject = localStream
 
 }
+
 let addAnswer =  async (answer) => {
     if(!peerConnection.currentRemoteDescription){
         await peerConnection.setRemoteDescription(answer)
@@ -58,18 +60,22 @@ let handleMessageFromPeer = async (message, MemberId) => {
     console.log('Message: ', message)
 }
 
-
-
 let handleUserJoined = async (MemberId) => {
     console.log('A new user joined the channel. UID:', uid )
     createOffer(MemberId)
 
 }
+
+let handleUserLeft = (MemberId) => {
+    document.getElementById('user-2').style.display = 'none'
+}
+
 let createPeerConnection = async (MemberId) => {
     peerConnection = new RTCPeerConnection(servers)
 
     remoteStream =  new MediaStream()
     document.getElementById('user-2').srcObject = remoteStream
+    document.getElementById('user-2').style.display = 'block'
 
     if(!localStream){
         localStream = await navigator.mediaDevices.getUserMedia({video:true, audio:false})
@@ -119,4 +125,11 @@ let createAnswer = async (MemberId, offer) => {
 
 }
 
+
+let leaveChannel = async () =>{
+    await channel.leave()
+    await client.logout()
+}
+
+window.addEventListener('beforeunload', leaveChannel)
 init()
